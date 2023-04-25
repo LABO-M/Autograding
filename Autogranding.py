@@ -30,8 +30,16 @@ def get_answer_cells(path_nb):
 def get_cell_content(nb, cell_num):
     """指定したセル番号のテキストの中身を返す"""
     cells = nb["cells"]
+    cell = cells[cell_num]
     try:
-        cell_content = cells[cell_num]['outputs'][0]
+        if cell['outputs']:
+            output = cell['outputs'][0]
+            if 'text/plain' in output.get('data', {}):
+                cell_content = output['data']['text/plain']
+            elif 'text' in output:
+                cell_content = output['text']
+            else:
+                cell_content = None
         return cell_content
     except:
         pass
