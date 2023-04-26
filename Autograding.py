@@ -61,6 +61,12 @@ def display_submission_cells(path_sbmt_nb, answer_cells):
             else:
                 print(f"提出ファイル: {_nb.name} に {sentence} のセルが見つかりませんでした。")
 
+    answer_content_dict = {} #{問題番号: 解答セルの中身}
+    for i in range(len(answer_cells)):
+        answer_content_dict[i+1] = get_cell_content(nb, answer_cells[i])
+
+    pprint(answer_content_dict)
+
 if __name__ == '__main__':
     # path to notebook(.ipynb)
     path_ans_nb = pathlib.Path("./answer/")
@@ -71,3 +77,4 @@ if __name__ == '__main__':
     print(f"解答セルの番号: {answer_cells}")
 
     display_submission_cells(path_sbmt_nb, answer_cells)
+
