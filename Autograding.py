@@ -13,19 +13,23 @@ def identify_cell(sentence, cells, cell_type='code'):
             break
     return _cell_num
 
-def get_answer_cells(path_nb):
+def convert_to_json(_nb):
+    """ipynbファイルをjson形式に変換し、内容、回答セル番号、提出ファイル名を返す"""
+    with open(_nb, "r") as f:
+        nb = json.load(f)
+        cells = nb["cells"]
+
+    return nb, cells
+
+def get_code_cell_nums(_nb):
     """ディレクトリ内の問題の解答セルの番号をリストで返す"""
-    answer_cells = []
-    for _nb in path_nb.glob("*.ipynb"):
-        with open(_nb, "r") as f:
-            nb = json.load(f)
-            cells = nb["cells"]
+    code_cell_nums = []
+    cells = convert_to_json(_nb)[1]
+    for i, cell in enumerate(cells):
+        if cell["cell_type"] == "code" and re.match(r'#問題\d+', cell['source'][0]):
+            code_cell_nums.append(i)
 
-        for i, cell in enumerate(cells):
-            if cell["cell_type"] == "code" and re.match(r'#問題\d+', cell['source'][0]):
-                answer_cells.append(i)
-
-    return answer_cells
+    return code_cell_nums
 
 def get_cell_content(nb, cell_num):
     """指定したセル番号のテキストの中身を返す"""
@@ -44,37 +48,52 @@ def get_cell_content(nb, cell_num):
     except:
         pass
 
-def display_submission_cells(path_sbmt_nb, answer_cells):
+def make_dict_from_content(_nb, code_cell_nums):
+    """get_cell_contentの出力を辞書型に変換する"""
+    cell_content_dict = {} #{問題番号: 解答セルの中身}
+    for i in range(len(code_cell_nums)):
+        cell_content_dict[i+1] = get_cell_content(_nb, code_cell_nums[i])
+
+    return cell_content_dict
+
+def display_code_cells(_nb, code_cell_nums):
     """提出ファイルの解答セルを特定して、セルの中身を表示する"""
-    for _nb in path_sbmt_nb.glob("*.ipynb"):
-        with open(_nb, "r") as f:
-            nb = json.load(f)
-            cells = nb["cells"]
+    display_nb = convert_to_json(_nb)[0]
+    cells = convert_to_json(_nb)[1]
 
-        for i in range(len(answer_cells)):
-            sentence = f"#問題{i+1}"
-            _cell_num = identify_cell(sentence, cells)
-            if _cell_num is not None:
-                cell_content = get_cell_content(nb, _cell_num)
-                print(f"提出ファイル: {_nb.name} のセル番号: {_cell_num}")
-                print(f"セル内容:\n{cell_content}")
-            else:
-                print(f"提出ファイル: {_nb.name} に {sentence} のセルが見つかりませんでした。")
-
-    answer_content_dict = {} #{問題番号: 解答セルの中身}
-    for i in range(len(answer_cells)):
-        answer_content_dict[i+1] = get_cell_content(nb, answer_cells[i])
-
-    pprint(answer_content_dict)
+    for i in range(len(code_cell_nums)):
+        sentence = f"#問題{i+1}"
+        _cell_num = identify_cell(sentence, cells)
+        if _cell_num is not None:
+            cell_content = get_cell_content(display_nb, _cell_num)
+            print(f"提出ファイル: {_nb.name} のセル番号: {_cell_num}")
+            print(f"セル内容:\n{cell_content}")
+        else:
+            print(f"提出ファイル: {_nb.name} に {sentence} のセルが見つかりませんでした。")
+    
+    content_dict = make_dict_from_content(display_nb, code_cell_nums)
+    pprint(content_dict)
 
 if __name__ == '__main__':
     # path to notebook(.ipynb)
     path_ans_nb = pathlib.Path("./answer/")
     path_sbmt_nb = pathlib.Path("./submitted/")
 
-    # Get a list of answer cell numbers in the directory
-    answer_cells = get_answer_cells(path_ans_nb)
-    print(f"解答セルの番号: {answer_cells}")
+    # Get a list of answer cell numbers in the directory, code_cell_nums = ge, code_cell_nums(path_ans_nb)
 
-    display_submission_cells(path_sbmt_nb, answer_cells)
+    for _nb in path_ans_nb.glob("*.ipynb"):
+
+        code_cell_nums = get_code_cell_nums(_nb)
+        print(f"解答セルの番号:{code_cell_nums}")
+
+        display_code_cells(_nb, code_cell_nums)
+
+    for _nb in path_sbmt_nb.glob("*.ipynb"):
+
+        code_cell_nums = get_code_cell_nums(_nb)
+        print(f"解答セルの番号:{code_cell_nums}")
+
+        display_code_cells(_nb, code_cell_nums)
+
+    
 
