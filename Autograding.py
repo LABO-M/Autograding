@@ -1,29 +1,16 @@
 import json
 import pathlib
 from typing import Dict, List
-from utils import identify_cell
+from utils import *
 from student_notebook import StudentNotebook
 
 def load_model_ans(path: pathlib.Path) -> Dict[int, List[str]]:
-    with open(path, "r") as f:
-        nb = json.load(f)
-        cells = nb["cells"]
+    cells = load_cells(path)
+    question_cells = get_question_cells(cells)
 
     model_ans = {}
-    for i in range(1, 10):  # 10 は適当な上限です
-        cn = identify_cell(sentence=f"#問題{i}\n", cells=cells)
-        if cn != -1:
-            ans_cell = cells[cn]
-            if ans_cell['outputs'][0]:
-                output = ans_cell['outputs'][0]
-                if 'text/plain' in output.get('data', {}):
-                    model_ans[i] = output['data']['text/plain']
-                elif 'text' in output:
-                    model_ans[i] = output['text']
-                else:
-                    model_ans[i] = None
-        else:
-            break
+    for question_num, ans_cell in question_cells.items():
+        model_ans[question_num] = get_output_from_cell(ans_cell)
 
     return model_ans
 
