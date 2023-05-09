@@ -2,7 +2,7 @@ import json
 import pathlib
 from typing import Dict, List
 from utils import *
-from student_notebook import StudentNotebook
+from notebook import StudentNotebook
 
 def load_model_ans(path: pathlib.Path) -> Dict[int, List[str]]:
     cells = load_cells(path)

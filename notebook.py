@@ -18,4 +18,19 @@ class StudentNotebook:
             if student_ans_text == self.model_ans.get(question_num):
                     score += 1
 
+        self.write_score(score, len(self.model_ans))
         return score
+
+    def write_score(self, score: int, total_questions: int) -> None:
+        score_cell = {
+            'cell_type': 'markdown',
+            'metadata': {},
+            'source': ["### 採点結果\n", f"**{score}点 / {total_questions}点満点中**"]
+        }
+
+        # ノートブックの一番上のセルの下に新たなセルを挿入
+        self.cells.insert(1, score_cell)
+
+        # 解答用の ipynb に dump (上書き)
+        with open(self.student_path, "w") as f:
+            json.dump({"cells": self.cells, "metadata": {}}, f)
