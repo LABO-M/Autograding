@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 def identify_cell(sentence: str, cells: List[Dict], cell_type: str = 'code') -> int:
     for i, _cell in enumerate(cells):
-        if _cell['cell_type'] == cell_type and _cell['source'][0] == sentence:
+        if _cell['cell_type'] == cell_type and len(_cell['source']) > 0 and _cell['source'][0] == sentence:
             return i
     return -1
 

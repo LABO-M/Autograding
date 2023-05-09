@@ -17,11 +17,11 @@ def load_model_ans(path: pathlib.Path) -> Dict[int, List[str]]:
 
 def main():
     answer_path = pathlib.Path("answer/model_ans_1.ipynb")
-    submitted_path = pathlib.Path("submitted")
+    submitted_path = pathlib.Path("submitted/7231000021-1")
 
     model_ans = load_model_ans(answer_path)
 
-    for student_path in submitted_path.glob("*.ipynb"):
+    for student_path in submitted_path.glob("*_assignsubmission_file_/*.ipynb"):
         student_notebook = StudentNotebook(student_path, model_ans)
         score = student_notebook.grade()
         print(f"{student_path.name} のスコア: {score}")
