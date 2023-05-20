@@ -20,11 +20,31 @@ class StudentNotebook:
 
         for question_num, ans_cell in question_cells.items():
             student_ans_text = get_output_from_cell(ans_cell)
-            if student_ans_text == self.model_ans.get(question_num):
-                    score += 1
+
+            is_correct = student_ans_text == self.model_ans.get(question_num)
+
+            if is_correct:
+                score += 1
+
+            self.mark_answer(question_num, ans_cell, is_correct)
 
         self.write_score(score, len(self.model_ans))
         return score
+
+    def mark_answer(self, question_num: int, ans_cell: Dict, is_correct: bool) -> None:
+        mark = '正解' if is_correct else '不正解'
+
+        # 正誤を表示するマークダウンセルを作成する
+        mark_cell = {
+            'cell_type': 'markdown',
+            'metadata': {},
+            'source': [f"**採点結果 (問題{question_num}): {mark}**"]
+        }
+
+        # マークダウンセルをアンサーセルの後に挿入する
+        index = self.cells.index(ans_cell)
+        self.cells.insert(index + 1, mark_cell)
+
 
     def write_score(self, score: int, total_questions: int) -> None:
         score_cell = {

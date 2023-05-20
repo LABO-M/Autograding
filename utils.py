@@ -32,7 +32,7 @@ def get_output_from_cell(cell: Dict) -> Optional[str]:
     if cell['outputs'] and cell['outputs'][0]:
         output = cell['outputs'][0]
         if 'text/plain' in output.get('data', {}):
-            return output['data']['text/plain']
+            return [x.strip() for x in output['data']['text/plain']]
         elif 'text' in output:
-            return output['text']
+            return [x.strip() for x in output['text']]
     return None
