@@ -1,5 +1,6 @@
 import json
 import pathlib
+import fnmatch
 from typing import Dict, List
 from utils import *
 from notebook import StudentNotebook
@@ -16,15 +17,34 @@ def load_model_ans(path: pathlib.Path) -> Dict[int, List[str]]:
 
 
 def main():
-    answer_path = pathlib.Path("answer/model_ans_1.ipynb")
-    submitted_path = pathlib.Path("submitted")
+    answer_dir = pathlib.Path("answer/7231000021-2")
+    submitted_path = pathlib.Path("submitted/7231000021-2")
 
-    model_ans = load_model_ans(answer_path)
+    # 解答モデルの読み込みと格納
+    model_ans_dict = {}
+    for model_ans_path in answer_dir.glob("*.ipynb"):
+        model_name = model_ans_path.stem  # ファイル名から拡張子を除いた名前を取得
+        model_ans_dict[model_name] = load_model_ans(model_ans_path)
 
-    for student_path in submitted_path.glob("*.ipynb"):
+    for student_path in submitted_path.glob("*_assignsubmission_file_/*.ipynb"):
+        # 採点ファイルの名前から解答モデルを特定
+        assignment_name = student_path.stem
+
+        # ファイル名が特定のパターンに一致する解答モデルを探す
+        model_ans = None
+        for model_name, ans in model_ans_dict.items():
+            if fnmatch.fnmatch(assignment_name, f"{model_name}*"):
+                model_ans = ans
+                break
+
+        # 解答モデルが見つからない場合はエラーを表示して次のファイルへ
+        if model_ans is None:
+            print(f"エラー: 解答モデルが見つからない (ファイル名: {assignment_name})")
+            continue
+
         student_notebook = StudentNotebook(student_path, model_ans)
         score = student_notebook.grade()
-        print(f"{student_path.name} のスコア: {score}")
+        print(f"{student_notebook.student_name} {model_name}のスコア: {score}")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 def identify_cell(sentence: str, cells: List[Dict], cell_type: str = 'code') -> int:
     for i, _cell in enumerate(cells):
-        if _cell['cell_type'] == cell_type and _cell['source'][0] == sentence:
+        if _cell['cell_type'] == cell_type and len(_cell['source']) > 0 and _cell['source'][0] == sentence:
             return i
     return -1
 
@@ -32,7 +32,7 @@ def get_output_from_cell(cell: Dict) -> Optional[str]:
     if cell['outputs'] and cell['outputs'][0]:
         output = cell['outputs'][0]
         if 'text/plain' in output.get('data', {}):
-            return output['data']['text/plain']
+            return [x.strip() for x in output['data']['text/plain']]
         elif 'text' in output:
-            return output['text']
+            return [x.strip() for x in output['text']]
     return None
