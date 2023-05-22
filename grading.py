@@ -17,12 +17,12 @@ def load_model_ans(path: pathlib.Path) -> Dict[int, List[str]]:
 
 
 def main():
-    answer_dir = pathlib.Path("answer/7231000021-2")
+    model_dir = pathlib.Path(".model/7231000021-2")
     submitted_path = pathlib.Path("submitted/7231000021-2")
 
     # 解答モデルの読み込みと格納
     model_ans_dict = {}
-    for model_ans_path in answer_dir.glob("*.ipynb"):
+    for model_ans_path in model_dir.glob("*.ipynb"):
         model_name = model_ans_path.stem  # ファイル名から拡張子を除いた名前を取得
         model_ans_dict[model_name] = load_model_ans(model_ans_path)
 
