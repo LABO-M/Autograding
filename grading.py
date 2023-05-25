@@ -43,7 +43,7 @@ def batch_grading(answer_dir_path: str, submitted_dir_path: str) -> None:
             print(f"エラー: 解答モデルが見つからない (ファイル名: {assignment_name})")
             continue
 
-        student_notebook = StudentNotebook(student_path, model_ans)
+        student_notebook = StudentNotebook(student_path, model_ans, mode="batch")
         score = student_notebook.grade()
         print(f"{student_notebook.student_name} {model_name}のスコア: {score}")
 
@@ -55,9 +55,9 @@ def local_grading(model_ans_path: str, student_path: str) -> None:
     model_name = model_ans_path.stem
     model_ans = load_model_ans(model_ans_path)
 
-    student_notebook = StudentNotebook(student_path, model_ans)
+    student_notebook = StudentNotebook(student_path, model_ans, mode="local")
     score = student_notebook.grade()
-    print(f"{student_notebook.student_name} {model_name}のスコア: {score}")
+    print(score)
 
 def main():
     parser = argparse.ArgumentParser(description='Grading script.')

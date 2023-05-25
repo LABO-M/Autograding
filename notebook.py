@@ -5,12 +5,14 @@ from typing import Dict, List
 from utils import *
 
 class StudentNotebook:
-    def __init__(self, student_path: pathlib.Path, model_ans: Dict[int, List[str]]):
+    def __init__(self, student_path: pathlib.Path, model_ans: Dict[int, List[str]], mode: str = "local"):
         self.student_path = student_path
         self.model_ans = model_ans
         self.max_question_num = len(model_ans)
         self.cells = load_cells(self.student_path)
-        self.student_name = self.get_student_name()
+        # ローカルモードでない場合のみ、get_student_nameを実行
+        if mode != "local":
+            self.student_name = self.get_student_name()
 
     def get_student_name(self) -> str:
         return self.student_path.parent.parts[-1].split("_")[0]
