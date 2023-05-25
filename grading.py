@@ -1,4 +1,5 @@
 import json
+import argparse
 import pathlib
 import fnmatch
 from typing import Dict, List
@@ -15,18 +16,18 @@ def load_model_ans(path: pathlib.Path) -> Dict[int, List[str]]:
 
     return model_ans
 
-
-def main():
-    model_dir = pathlib.Path(".model/7231000021-2")
-    submitted_path = pathlib.Path("submitted/7231000021-2")
+# 生徒一括採点モード
+def batch_grading(answer_dir_path: str, submitted_dir_path: str) -> None:
+    answer_dir = pathlib.Path(answer_dir_path)
+    submitted_dir = pathlib.Path(submitted_dir_path)
 
     # 解答モデルの読み込みと格納
     model_ans_dict = {}
-    for model_ans_path in model_dir.glob("*.ipynb"):
+    for model_ans_path in answer_dir.glob("*.ipynb"):
         model_name = model_ans_path.stem  # ファイル名から拡張子を除いた名前を取得
         model_ans_dict[model_name] = load_model_ans(model_ans_path)
 
-    for student_path in submitted_path.glob("*_assignsubmission_file_/*.ipynb"):
+    for student_path in submitted_dir.glob("*_assignsubmission_file_/*.ipynb"):
         # 採点ファイルの名前から解答モデルを特定
         assignment_name = student_path.stem
 
@@ -46,6 +47,36 @@ def main():
         score = student_notebook.grade()
         print(f"{student_notebook.student_name} {model_name}のスコア: {score}")
 
+# 生徒ローカル採点モード
+def local_grading(model_ans_path: str, student_path: str) -> None:
+    model_ans_path = pathlib.Path(model_ans_path)
+    student_path = pathlib.Path(student_path)
+
+    model_name = model_ans_path.stem
+    model_ans = load_model_ans(model_ans_path)
+
+    student_notebook = StudentNotebook(student_path, model_ans)
+    score = student_notebook.grade()
+    print(f"{student_notebook.student_name} {model_name}のスコア: {score}")
+
+def main():
+    parser = argparse.ArgumentParser(description='Grading script.')
+    parser.add_argument('--batch', action='store_true', help='Use batch mode. If not specified, local mode is used.')
+    parser.add_argument('--model', type=str, help='Path to the model answer file.')
+    parser.add_argument('--student', type=str, help='Path to the student notebook file.')
+    parser.add_argument('--answer_dir', type=str, help='Path to the answer directory.')
+    parser.add_argument('--submitted_dir', type=str, help='Path to the submitted directory.')
+
+    args = parser.parse_args()
+
+    if args.batch:
+        if not args.answer_dir or not args.submitted_dir:
+            raise ValueError("In batch mode, both --answer_dir and --submitted_dir must be specified.")
+        batch_grading(args.answer_dir, args.submitted_dir)
+    else:
+        if not args.model or not args.student:
+            raise ValueError("In local mode, both --model and --student must be specified.")
+        local_grading(args.model, args.student)
 
 if __name__ == "__main__":
     main()
