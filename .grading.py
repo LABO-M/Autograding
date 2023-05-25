@@ -3,6 +3,22 @@ import subprocess
 import sys
 from pathlib import Path, PurePath
 
+repo_url = 'https://github.com/LABO-M/Autograding.git'
+clone_dir = 'Autograding'
+
+# Gitがインストールされているか確認し、インストールされていなければインストールする
+try:
+    subprocess.check_call(['git', '--version'])
+except FileNotFoundError:
+    subprocess.check_call(['sudo', 'apt', 'install', '-y', 'git'])
+
+# リポジトリが既にクローンされているか確認し、クローンされていなければクローンする
+if not os.path.isdir(clone_dir):
+    subprocess.run(['git', 'clone', repo_url, clone_dir])
+
+# リポジトリをpullする
+subprocess.run(['git', '-C', clone_dir, 'pull', 'origin', 'main'])
+
 # python-dotenvがインストールされていなければインストール
 try:
     from dotenv import load_dotenv
