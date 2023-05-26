@@ -8,22 +8,22 @@ clone_dir = 'Autograding'
 
 # Gitがインストールされているか確認し、インストールされていなければインストールする
 try:
-    subprocess.check_call(['git', '--version'])
+    subprocess.check_call(['git', '--version'], stdout=subprocess.DEVNULL)
 except FileNotFoundError:
-    subprocess.check_call(['sudo', 'apt', 'install', '-y', 'git'])
+    subprocess.check_call(['sudo', 'apt', 'install', '-y', 'git'], stdout=subprocess.DEVNULL)
 
 # リポジトリが既にクローンされているか確認し、クローンされていなければクローンする
 if not os.path.isdir(clone_dir):
-    subprocess.run(['git', 'clone', repo_url, clone_dir])
+    subprocess.run(['git', 'clone', repo_url, clone_dir], stdout=subprocess.DEVNULL)
 
 # リポジトリをpullする
-subprocess.run(['git', '-C', clone_dir, 'pull', 'origin', 'main'])
+subprocess.run(['git', '-C', clone_dir, 'pull', 'origin', 'main'], stdout=subprocess.DEVNULL)
 
 # python-dotenvがインストールされていなければインストール
 try:
     from dotenv import load_dotenv
 except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "python-dotenv"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "python-dotenv"], stdout=subprocess.DEVNULL)
     from dotenv import load_dotenv
 
 # .grading.py の絶対パスを取得
