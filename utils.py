@@ -14,7 +14,7 @@ def load_cells(path: pathlib.Path) -> List[Dict]:
         cells = nb["cells"]
     return cells
 
-def get_question_cells(cells: List[Dict], max_question_num: int = 10) -> Dict[int, Dict]:
+def get_question_cells(cells: List[Dict], max_question_num: int = 30) -> Dict[int, Dict]:
     question_cells = {}
 
     for question_num in range(1, max_question_num + 1):
