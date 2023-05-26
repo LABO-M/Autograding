@@ -17,7 +17,7 @@ if not os.path.isdir(clone_dir):
     subprocess.run(['git', 'clone', repo_url, clone_dir], stdout=subprocess.DEVNULL)
 
 # リポジトリをpullする
-subprocess.run(['git', '-C', clone_dir, 'pull', 'origin', 'main'], stdout=subprocess.DEVNULL)
+subprocess.run(['git', '-C', clone_dir, 'pull', 'origin', 'main'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 # python-dotenvがインストールされていなければインストール
 try:
