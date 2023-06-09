@@ -1,6 +1,7 @@
 import pathlib
 import json
-from typing import Dict, List, Optional
+import re
+from typing import Dict, List, Tuple, Optional
 
 def identify_cell(sentence: str, cells: List[Dict], cell_type: str = 'code') -> int:
     for i, _cell in enumerate(cells):
@@ -17,21 +18,27 @@ def load_cells(path: pathlib.Path) -> List[Dict]:
 def get_question_cells(cells: List[Dict], max_question_num: int = 30) -> Dict[int, Dict]:
     question_cells = {}
 
-    for question_num in range(1, max_question_num + 1):
-        cn = identify_cell(sentence=f"#問題{question_num}", cells=cells)
-        if cn != -1:
-            question_cells[question_num] = cells[cn]
-        else:
-            pass
-        question_num += 1
+    pattern = re.compile(r'#問題(\d+)(\((\d+)\))?')
+
+    for i, cell in enumerate(cells):
+        if 'source' in cell and isinstance(cell['source'], list):
+            for line in cell['source']:
+                match = pattern.match(line)
+                if match:
+                    question_number = int(match.group(1))
+                    sub_question_number = int(match.group(3)) if match.group(3) else None
+                    key = (question_number, sub_question_number)
+                    question_cells[key] = cells[i]
 
     return question_cells
 
-def get_output_from_cell(cell: Dict) -> Optional[str]:
+def get_output_from_cell(cell: Dict) -> Tuple[Optional[str], bool]:
     if cell['outputs'] and cell['outputs'][0]:
         output = cell['outputs'][0]
         if 'text/plain' in output.get('data', {}):
-            return [x.strip() for x in output['data']['text/plain']]
+            output_text = [x.strip() for x in output['data']['text/plain']]
+            is_plot = any(text.startswith('<Figure') for text in output_text)
+            return output_text, is_plot
         elif 'text' in output:
-            return [x.strip() for x in output['text']]
-    return None
+            return [x.strip() for x in output['text']], False
+    return None, False
