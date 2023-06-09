@@ -11,8 +11,8 @@ def load_model_ans(path: pathlib.Path) -> Dict[int, List[str]]:
     question_cells = get_question_cells(cells)
 
     model_ans = {}
-    for question_num, ans_cell in question_cells.items():
-        model_ans[question_num] = get_output_from_cell(ans_cell)
+    for question_num_tuple, ans_cell in question_cells.items():
+        model_ans[question_num_tuple] = get_output_from_cell(ans_cell)
 
     return model_ans
 

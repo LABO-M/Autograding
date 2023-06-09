@@ -1,7 +1,7 @@
 import pathlib
 import json
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Tuple, Optional
 
 def identify_cell(sentence: str, cells: List[Dict], cell_type: str = 'code') -> int:
     for i, _cell in enumerate(cells):
@@ -18,7 +18,6 @@ def load_cells(path: pathlib.Path) -> List[Dict]:
 def get_question_cells(cells: List[Dict], max_question_num: int = 30) -> Dict[int, Dict]:
     question_cells = {}
 
-    # 正規表現を用いて「#問題X(Y)」の形式を捜索
     pattern = re.compile(r'#問題(\d+)(\((\d+)\))?')
 
     for i, cell in enumerate(cells):
@@ -26,7 +25,6 @@ def get_question_cells(cells: List[Dict], max_question_num: int = 30) -> Dict[in
             for line in cell['source']:
                 match = pattern.match(line)
                 if match:
-                    # question_numberには「X」の部分が、sub_question_numberには「Y」の部分が入る
                     question_number = int(match.group(1))
                     sub_question_number = int(match.group(3)) if match.group(3) else None
                     key = (question_number, sub_question_number)
@@ -34,11 +32,13 @@ def get_question_cells(cells: List[Dict], max_question_num: int = 30) -> Dict[in
 
     return question_cells
 
-def get_output_from_cell(cell: Dict) -> Optional[str]:
+def get_output_from_cell(cell: Dict) -> Tuple[Optional[str], bool]:
     if cell['outputs'] and cell['outputs'][0]:
         output = cell['outputs'][0]
         if 'text/plain' in output.get('data', {}):
-            return [x.strip() for x in output['data']['text/plain']]
+            output_text = [x.strip() for x in output['data']['text/plain']]
+            is_plot = any(text.startswith('<Figure') for text in output_text)
+            return output_text, is_plot
         elif 'text' in output:
-            return [x.strip() for x in output['text']]
-    return None
+            return [x.strip() for x in output['text']], False
+    return None, False
