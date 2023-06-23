@@ -72,15 +72,21 @@ class StudentNotebook:
             else:
                 print(f"問題{question_tuple[0]}: {mark}")
 
-    def mark_answer(self, question_num: int, ans_cell: Dict, is_correct: bool) -> None:
+    def mark_answer(self, question_num: Tuple[int, Optional[int]], ans_cell: Dict, is_correct: bool) -> None:
         mark = '正解' if is_correct else '不正解'
         index = self.cells.index(ans_cell)
+
+        # 小問番号がNoneの場合とそうでない場合でマークダウンの書式を分ける
+        if question_num[1] is not None:
+            mark_text = f"**採点結果 (問題{question_num[0]} ({question_num[1]})): {mark}**"
+        else:
+            mark_text = f"**採点結果 (問題{question_num[0]}): {mark}**"
 
         # 正誤を表示するマークダウンセルを作成する
         mark_cell = {
             'cell_type': 'markdown',
             'metadata': {},
-            'source': [f"**採点結果 (問題{question_num}): {mark}**"]
+            'source': [mark_text]
         }
 
         # アンサーセルの後に同様のマークダウンセルがあるか確認
@@ -90,10 +96,10 @@ class StudentNotebook:
             self.cells.insert(index + 1, mark_cell)
 
 
-    def write_score(self, score: int, total_questions: int, not_found_questions: List[int]) -> None:
+    def write_score(self, score: int, total_questions: int, not_found_questions: List[Tuple[int, Optional[int]]]) -> None:
         score_text = ["### 採点結果\n", f"**{score}点 / {total_questions}点満点中**"]
         if not_found_questions:
-            not_found_text = ", ".join(str(num) for num in not_found_questions)
+            not_found_text = ", ".join(f"{num[0]}({num[1]})" if num[1] is not None else str(num[0]) for num in not_found_questions)
             score_text.append(f"\n\n問題{not_found_text}のセルが見つかりませんでした。問題セルの書式を変更しないでください。")
 
         score_cell = {
